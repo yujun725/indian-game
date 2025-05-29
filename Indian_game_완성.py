@@ -1,4 +1,4 @@
-﻿import pygame
+import pygame
 import sys
 import random
 
@@ -180,3 +180,97 @@ def draw_result_screen():
     restart_btn = draw_button("다시하기", WIDTH // 2 - 100, 350, 200, 50, BLUE)
     quit_btn = draw_button("종료하기", WIDTH // 2 - 100, 430, 200, 50, RED)
     return restart_btn, quit_btn
+def resolve_round():
+    global player_money, computer_money, round_result, betting_done, explanation
+    global flipping, flip_progress, money_change_text, money_change_alpha, money_change_timer
+
+    money_change_text = ""
+    money_change_alpha = 255
+    money_change_timer = 60
+
+    if not player_bets:
+        # 베팅 안 했을 경우
+        if player_card > computer_card:
+            loss = expected_reward(computer_prob)
+            player_money -= loss
+            computer_money += loss
+            round_result = "베팅하지 않아 판을 내줬습니다."
+            money_change_text = f"-{loss}"
+        elif player_card < computer_card:
+            loss = 50
+            player_money -= loss
+            computer_money += loss
+            round_result = "패배! (베팅 안 함)"
+            money_change_text = f"-{loss}"
+        else:
+            round_result = "무승부!"
+    else:
+        # 베팅한 경우
+        if player_card > computer_card:
+            reward = expected_reward(player_prob)
+            player_money += reward
+            computer_money -= reward
+            round_result = "승리!"
+            money_change_text = f"+{reward}"
+        elif player_card < computer_card:
+            loss = expected_reward(computer_prob)
+            player_money -= loss
+            computer_money += loss
+            round_result = "패배!"
+            money_change_text = f"-{loss}"
+        else:
+            round_result = "무승부"
+
+    flipping = True
+    flip_progress = 0.0
+
+    betting_done = True
+
+def draw_ui():
+    global money_change_alpha, money_change_timer
+    screen.blit(font.render(f"내 돈 : {player_money}", True, WHITE), (50, 40))
+    screen.blit(font.render(f"상대 돈 : {computer_money}", True, WHITE), (670, 40))
+
+    # 이동 금액 애니메이션
+    if money_change_timer > 0:
+        if "+" in money_change_text :
+            color = BLUE
+        elif "-" in money_change_text :
+            color = RED
+        else :
+            color = WHITE
+        
+        text_surface = font.render(money_change_text, True, color)
+        text_surface.set_alpha(money_change_alpha)
+        screen.blit(text_surface, (130, 75))
+
+        money_change_timer -= 1
+        money_change_alpha = max(0, money_change_alpha - 4)
+
+    # 남은 라운드 표시
+    rounds_left = len(deck) // 2
+    screen.blit(small_font.render(f"남은 라운드 수 : {rounds_left}", True, WHITE), (360, 30))
+
+    draw_card(240, 190, None if not betting_done else player_card, flipping, flip_progress)
+    draw_card(535, 190, computer_card)
+    screen.blit(font.render("VS", True, WHITE), (430, 260))
+    
+    if not betting_done:
+        expected_win_amount = expected_reward(player_prob)
+        screen.blit(small_font.render(f"승리 시 획득 금액 : {expected_win_amount}원", True, WHITE), (330, 60))
+
+    # 결과 화면 출력
+    if betting_done and round_result:
+        text = font.render(round_result, True, WHITE)
+        text_rect = text.get_rect(center=(240 + CARD_WIDTH // 2, 400))
+        screen.blit(text, text_rect)
+
+    for i, line in enumerate(explanation.split("\n")):
+        screen.blit(small_font.render(line, True, WHITE), (50, 460 + i * 20))
+    if not betting_done:
+        return draw_button("베팅하기", 200, 480, 200, 50, BLUE), draw_button("베팅하지 않기", 500, 480, 200, 50, RED)
+    else:
+        if len(deck) >= 2 :
+            return draw_button("다음 라운드", 350, 480, 200, 50, GRAY), None
+        else :
+            return draw_button("결과 보기", 350, 480, 200, 50, GRAY), None
