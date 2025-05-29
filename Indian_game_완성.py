@@ -274,3 +274,72 @@ def draw_ui():
             return draw_button("다음 라운드", 350, 480, 200, 50, GRAY), None
         else :
             return draw_button("결과 보기", 350, 480, 200, 50, GRAY), None
+
+deal_cards()
+running = True
+while running:
+    if game_state == "title":
+        buttons = draw_title_screen()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if buttons[0].collidepoint(event.pos):  # 게임 시작
+                    game_state = "playing"
+                elif buttons[1].collidepoint(event.pos):  # 게임 종료
+                    running = False
+
+    elif game_state == "playing":
+        screen.blit(background, (0, 0))
+        if flipping :
+            flip_progress += flip_speed
+            if flip_progress >= 1.0 :
+                flip_progress = 0.0
+                flipping = False
+        buttons = draw_ui()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if buttons:
+                    if buttons[0].collidepoint(event.pos):
+                        if not betting_done:
+                            player_bets = True
+                            resolve_round()
+                        else:
+                            if len(deck) >= 2:
+                                deal_cards()
+                            else:
+                                if player_money > computer_money:
+                                    final_result = "승리"
+                                elif player_money < computer_money:
+                                    final_result = "패배"
+                                else:
+                                    final_result = "무승부"
+                                game_state = "result"
+                    elif buttons[1] and buttons[1].collidepoint(event.pos):
+                        player_bets = False
+                        resolve_round()
+
+
+    elif game_state == "result":
+        buttons = draw_result_screen()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if buttons[0].collidepoint(event.pos):  # 다시하기
+                    player_money = 1000
+                    computer_money = 1000
+                    deck = [i for i in range(1, 10) for _ in range(2)]
+                    random.shuffle(deck)
+                    deal_cards()
+                    game_state = "playing"
+                elif buttons[1].collidepoint(event.pos):  # 종료하기
+                    running = False
+
+    pygame.display.flip()
+    clock.tick(30)
+
+pygame.quit()
+sys.exit()
