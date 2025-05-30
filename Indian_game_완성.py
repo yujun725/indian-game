@@ -54,7 +54,6 @@ computer_prob = 0
 round_result = ""
 betting_done = False
 player_bets = False
-explanation = ""
 final_result = ""
 money_change_text = ""
 money_change_alpha = 0
@@ -130,7 +129,7 @@ def expected_reward(win_prob):
 
 def deal_cards():
     global player_card, computer_card, player_prob, computer_prob
-    global round_result, betting_done, player_bets, explanation
+    global round_result, betting_done, player_bets
 
     player_card = deck.pop()
     computer_card = deck.pop()
@@ -139,7 +138,6 @@ def deal_cards():
     round_result = ""
     betting_done = False
     player_bets = False
-    explanation = ""
 
 game_state = "title"
 
@@ -178,7 +176,7 @@ def draw_result_screen():
     quit_btn = draw_button("종료하기", WIDTH // 2 - 100, 430, 200, 50, RED)
     return restart_btn, quit_btn
 def resolve_round():
-    global player_money, computer_money, round_result, betting_done, explanation
+    global player_money, computer_money, round_result, betting_done
     global flipping, flip_progress, money_change_text, money_change_alpha, money_change_timer
 
     money_change_text = ""
@@ -262,8 +260,6 @@ def draw_ui():
         text_rect = text.get_rect(center=(240 + CARD_WIDTH // 2, 400))
         screen.blit(text, text_rect)
 
-    for i, line in enumerate(explanation.split("\n")):
-        screen.blit(small_font.render(line, True, WHITE), (50, 460 + i * 20))
     if not betting_done:
         return draw_button("베팅하기", 200, 480, 200, 50, BLUE), draw_button("베팅하지 않기", 500, 480, 200, 50, RED)
     else:
