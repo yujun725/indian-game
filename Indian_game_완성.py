@@ -114,9 +114,6 @@ def calculate_computer_win_prob(player_card):
     wins = sum(1 for c in remaining if c > player_card)
     return int((wins / len(remaining)) * 100)
 
-def expected_reward(win_prob, max_amount=100):
-    return int(max_amount * (1 - win_prob / 100))
-
 def expected_reward(win_prob):
     # 승리 확률에 따른 금액 이동
     if 0 <= win_prob < 20:
